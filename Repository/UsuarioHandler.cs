@@ -5,16 +5,19 @@ namespace MiPrimeraApi.Repository
 {
     public static class UsuarioHandler
     {
+        //Cadena de conexion a la base de datos
         public const string CadenaConn = "Server=DESKTOP-86FO44B;Initial Catalog=SistemaGestion;" +
             "Trusted_Connection=true";
         
-        public static List<Usuario> GetUsuarios()
+        //Metodo para traer usuario por su nombre
+        public static Usuario GetUsuarios(string nombreUsuario)
         {
-            const string querycommand = "SELECT * FROM Usuario";
+            //Consulta a la base de datos
+            string querycommand = "SELECT * FROM Usuario WHERE NombreUsuario=@nombreUsuario";
 
-            List<Usuario> resultado = new List<Usuario>();
+            Usuario resultado = new Usuario();
 
-            try 
+            try //Comandos de consultas a la base de datos
             {
                 using (SqlConnection conn = new SqlConnection(CadenaConn))
                 {
@@ -22,11 +25,16 @@ namespace MiPrimeraApi.Repository
 
                     using (SqlCommand sqlcom = new SqlCommand(querycommand, conn))
                     {
-                        using (SqlDataReader lector = sqlcom.ExecuteReader())
+                        //se crean los parametros necesarios como para ejecutar la consulta a la base de datos
+                        SqlParameter parametro = new SqlParameter("nombreUsuario", System.Data.SqlDbType.VarChar);
+                        parametro.Value = nombreUsuario;
+                        sqlcom.Parameters.Add(parametro);
+
+                        using (SqlDataReader lector = sqlcom.ExecuteReader()) //Se trae al usuario
                         {
                             if (lector.HasRows)
                             {
-                                while (lector.Read())
+                                while (lector.Read()) //Se leen sus datos
                                 {
                                     Usuario usuario = new Usuario();
                                     usuario.Id = Convert.ToInt32(lector["Id"]);
@@ -35,7 +43,7 @@ namespace MiPrimeraApi.Repository
                                     usuario.NombreUsuario = lector["NombreUsuario"].ToString();
                                     usuario.Contraseña = lector["Contraseña"].ToString();
                                     usuario.Mail = lector["Mail"].ToString();
-                                    resultado.Add(usuario);
+                                    resultado=usuario;
                                 }
                             }
                         }
@@ -52,25 +60,24 @@ namespace MiPrimeraApi.Repository
             
             return resultado;
         }
+
+        //Metodo que devuelve un objeto Usuario con los parametros NombreUsuario y Contraseña
         public static Usuario VerificaUsuario(string nombreUsuario, string contraseña)
         {
-            
+            //consulta a la base de datos
             string queryCommand = "SELECT * FROM Usuario WHERE Usuario.NombreUsuario = @nombreUsuario AND Usuario.Contraseña = @contraseña;";
+
             Usuario resultado = new Usuario();  
-            try
+
+            try //comandos de consultas a la base de datos
             {
                 using (SqlConnection conn = new SqlConnection(CadenaConn))
                 {
-                    SqlParameter parametroUser = new SqlParameter();
-                    parametroUser.ParameterName = "nombreUsuario";
-                    parametroUser.SqlDbType = System.Data.SqlDbType.VarChar;
+                    //se crean los parametros necesarios como para ejecutar la consulta a la base de datos
+                    SqlParameter parametroUser = new SqlParameter("nombreUsuario", System.Data.SqlDbType.VarChar);
                     parametroUser.Value = nombreUsuario;
-                    SqlParameter parametroContraseña = new SqlParameter();
-                    parametroContraseña.ParameterName = "contraseña";
-                    parametroContraseña.SqlDbType = System.Data.SqlDbType.VarChar;
+                    SqlParameter parametroContraseña = new SqlParameter("contraseña", System.Data.SqlDbType.VarChar);
                     parametroContraseña.Value = contraseña;
-
-                    
                     
                     conn.Open();
 
@@ -78,13 +85,13 @@ namespace MiPrimeraApi.Repository
                     {
                         sqlcomm.Parameters.Add(parametroUser);
                         sqlcomm.Parameters.Add(parametroContraseña);
-                       using (SqlDataReader lector = sqlcomm.ExecuteReader())
+                       using (SqlDataReader lector = sqlcomm.ExecuteReader()) //devuelve resultado de la busqueda
                         {
                             if (lector.HasRows)
                             {
-                                while (lector.Read())
+                                while (lector.Read()) //Se leen sus datos
                                 {
-                                    Usuario usuario = new Usuario();
+                                    Usuario usuario = new Usuario(); 
                                     usuario.Id = Convert.ToInt32(lector["Id"]);
                                     usuario.Nombre = lector["Nombre"].ToString();
                                     usuario.Apellido = lector["Apellido"].ToString();
@@ -108,21 +115,23 @@ namespace MiPrimeraApi.Repository
              
 
             }
+            //Devuelve un objeto vacio (si no existen los parametros enviados a la base de datos)
             return resultado;
         }
 
+        //Metodo para las bajas de usuarios por Id
         public static bool BajaUsuario (int id)
         {
             bool resultado = false;
-           
 
             try
             {
-
                 using (SqlConnection conn = new SqlConnection(CadenaConn))
                 {
                     string queryCommand = "DELETE FROM Usuario WHERE Id = @idUsuario;";
                     conn.Open();
+
+                    //se crean los parametros necesarios como para ejecutar la consulta a la base de datos
                     SqlParameter parametro = new SqlParameter("idUsuario", System.Data.SqlDbType.BigInt);
                     parametro.Value = id;
                     using (SqlCommand sqlcomm = new SqlCommand(queryCommand, conn))
@@ -147,71 +156,96 @@ namespace MiPrimeraApi.Repository
             return resultado;
         }
 
+        //Metodo para dar de alta un usuario en la base de datos
         public static bool AltaUsuario(Usuario usuario)
         {
             bool resultado = false;
-            
+
             try
             {
+                // Devuelve un objeto Usuario para comparar si ya existe nombreUsuario
+                Usuario user = GetUsuarios(usuario.NombreUsuario);
+
                 
-                using(SqlConnection conn = new SqlConnection(CadenaConn))
+                
+                if (user.NombreUsuario == null) // Comprobamos si existe nombreUsuario
                 {
-                    string queryCommand = "INSERT INTO Usuario(Nombre, Apellido, NombreUsuario, Contraseña, Mail) VALUES(@nombre, @apellido, @nombreUsuario, @contraseña, @mail);";
-                    SqlParameter parametroNombre = new SqlParameter("nombre", System.Data.SqlDbType.VarChar);
-                    parametroNombre.Value = usuario.Nombre;
-                    SqlParameter parametroApellido = new SqlParameter("apellido", System.Data.SqlDbType.VarChar);
-                    parametroApellido.Value = usuario.Apellido;
-                    SqlParameter parametroNombreUsuario = new SqlParameter("nombreUsuario", System.Data.SqlDbType.VarChar);
-                    parametroNombreUsuario.Value = usuario.NombreUsuario;
-                    SqlParameter parametroContraseña = new SqlParameter("contraseña", System.Data.SqlDbType.VarChar);
-                    parametroContraseña.Value = usuario.Contraseña;
-                    SqlParameter parametroMail = new SqlParameter("mail", System.Data.SqlDbType.VarChar);
-                    parametroMail.Value =usuario.Mail;
-
-                    conn.Open();
-                    using (SqlCommand sqlcomm = new SqlCommand(queryCommand, conn))
+                    //Si no existe NombreUsuario comienza el alta del usuario pasado
+                    using (SqlConnection conn = new SqlConnection(CadenaConn))
                     {
-                        sqlcomm.Parameters.Add(parametroNombre);
-                        sqlcomm.Parameters.Add(parametroApellido);
-                        sqlcomm.Parameters.Add(parametroNombreUsuario);
-                        sqlcomm.Parameters.Add(parametroContraseña);
-                        sqlcomm.Parameters.Add(parametroMail);
+                        string queryCommand = "INSERT INTO Usuario(Nombre, Apellido, NombreUsuario, Contraseña, Mail) VALUES(@nombre, @apellido, @nombreUsuario, @contraseña, @mail);";
 
-                        int filas = sqlcomm.ExecuteNonQuery();
-                        if (filas > 0)
+                        //se crean los parametros necesarios como para ejecutar la consulta a la base de datos
+                        SqlParameter parametroNombre = new SqlParameter("nombre", System.Data.SqlDbType.VarChar);
+                        parametroNombre.Value = usuario.Nombre;
+                        SqlParameter parametroApellido = new SqlParameter("apellido", System.Data.SqlDbType.VarChar);
+                        parametroApellido.Value = usuario.Apellido;
+                        SqlParameter parametroNombreUsuario = new SqlParameter("nombreUsuario", System.Data.SqlDbType.VarChar);
+                        parametroNombreUsuario.Value = usuario.NombreUsuario;
+                        SqlParameter parametroContraseña = new SqlParameter("contraseña", System.Data.SqlDbType.VarChar);
+                        parametroContraseña.Value = usuario.Contraseña;
+                        SqlParameter parametroMail = new SqlParameter("mail", System.Data.SqlDbType.VarChar);
+                        parametroMail.Value = usuario.Mail;
+
+                        conn.Open();
+                        using (SqlCommand sqlcomm = new SqlCommand(queryCommand, conn))
                         {
-                            return true;
+                            sqlcomm.Parameters.Add(parametroNombre);
+                            sqlcomm.Parameters.Add(parametroApellido);
+                            sqlcomm.Parameters.Add(parametroNombreUsuario);
+                            sqlcomm.Parameters.Add(parametroContraseña);
+                            sqlcomm.Parameters.Add(parametroMail);
+
+                            int filas = sqlcomm.ExecuteNonQuery();// se realiza el alta del usuario en la base de datos
+                            if (filas > 0)
+                            {
+                                //Usuario creado
+                                return true;
+                            }
+
+
+
                         }
 
+                        conn.Close();
 
 
                     }
 
-                    conn.Close();
-
-
                 }
-                
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return false;
-            
+
+            }
+
+            if(resultado)
+            {
+               Console.WriteLine("Usuario Dado de alta exitosamente");
+            }
+            {
+                Console.WriteLine("No se puede repetir el nombre de usuario");
             }
             return resultado;
+
         }
 
+        //Metodo para modificar datos de usuario
         public static bool ModificarUsuario(Usuario usuario)
         {
             bool resultado = false;
 
-            try
+            try //Comandos a la base de datos para modificar al usuario como referencia por el id
             {
-
+                
                 using (SqlConnection conn = new SqlConnection(CadenaConn))
                 {
+                    //Consulta a la base de datos
                     string queryCommand = "UPDATE Usuario SET Nombre = @nombre, Apellido = @apellido, NombreUsuario = @nombreUsuario, Contraseña = @contraseña, Mail = @mail WHERE Id = @id;";
+
+                    //se crean los parametros necesarios como para ejecutar la consulta a la base de datos
                     SqlParameter parametroId = new SqlParameter("id", System.Data.SqlDbType.BigInt);
                     parametroId.Value = usuario.Id;
                     SqlParameter parametroNombre = new SqlParameter("nombre", System.Data.SqlDbType.VarChar);
@@ -235,19 +269,15 @@ namespace MiPrimeraApi.Repository
                         sqlcomm.Parameters.Add(parametroContraseña);
                         sqlcomm.Parameters.Add(parametroMail);
 
-                        int filas = sqlcomm.ExecuteNonQuery();
+                        int filas = sqlcomm.ExecuteNonQuery();//se realiza la modificacion del usuario
                         if (filas > 0)
                         {
-                           resultado=true;
+                           resultado=true;//Modificacion realizada
                         }
-
-
 
                     }
 
                     conn.Close();
-
-
                 }
 
             }

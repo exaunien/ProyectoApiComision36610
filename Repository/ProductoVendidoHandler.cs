@@ -5,17 +5,26 @@ namespace MiPrimeraApi.Repository
 {
     public static class ProductoVendidoHandler
     {
+        //Cadena de conexion con la base de datos
         public const string CadenaConn = "Server=DESKTOP-86FO44B;Initial Catalog=SistemaGestion;" +
             "Trusted_Connection=true";
        
-        public static List<ProductoVendido> GetProductosVendidos()
+        //Metodo para traer los productos vendidos por un usuario
+        public static List<ProductoVendido> GetProductosVendidos(string nombreUsuario)
         {
-            const string querycommand = "SELECT pv.Id, pv.stock, pd.Descripciones, us.NombreUsuario FROM ProductoVendido AS pv INNER JOIN Producto AS pd  ON pv.IdProducto = pd.Id INNER JOIN Usuario AS us ON us.id = pv.IdVenta;";
+            //consulta a la base de datos
+            string querycommand = "SELECT pv.Id, pv.Stock, pd.Descripciones, us.NombreUsuario " +
+            " FROM ProductoVendido AS pv INNER JOIN Producto AS pd ON pv.IdProducto = pd.Id " +
+            " INNER JOIN Usuario AS us ON us.Id = @id AND pd.IdUsuario = @id; ";
 
+            //determino id del usuario a listar
+           
+            Usuario user = UsuarioHandler.GetUsuarios(nombreUsuario);
+            var id = user.Id;
 
-            List<ProductoVendido> resultado = new List<ProductoVendido>();
+            List<ProductoVendido> resultado = new List<ProductoVendido>();//Instancia de la lista de productos vendidos
 
-            try
+            try // comandos a la base de datos
             {
                 using (SqlConnection conn = new SqlConnection(CadenaConn))
                 {
@@ -23,6 +32,11 @@ namespace MiPrimeraApi.Repository
 
                     using (SqlCommand sqlcom = new SqlCommand(querycommand, conn))
                     {
+                        //se crean los parametros necesarios como para ejecutar la consulta a la base de datos
+                        SqlParameter parametroId = new SqlParameter("id", System.Data.SqlDbType.BigInt);
+                        parametroId.Value = id;
+                        sqlcom.Parameters.Add(parametroId);
+
                         using (SqlDataReader lector = sqlcom.ExecuteReader())
                         {
                             if (lector.HasRows)
@@ -53,140 +67,7 @@ namespace MiPrimeraApi.Repository
 
         }
 
-        public static bool BajaProductoVendido(int id)
-        {
-            bool resultado = false;
-
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(CadenaConn))
-                {
-                    string queryCommand = "DELETE FROM ProductoVendido WHERE Id = @idProducto;";
-                    conn.Open();
-                    SqlParameter parametro = new SqlParameter("idProducto", System.Data.SqlDbType.BigInt);
-                    parametro.Value = id;
-                    using (SqlCommand sqlcomm = new SqlCommand(queryCommand, conn))
-                    {
-                        sqlcomm.Parameters.Add(parametro);
-                        int filas = sqlcomm.ExecuteNonQuery();
-                        if (filas > 0)
-                        {
-                            resultado = true;
-                        }
-
-                    }
-                    conn.Close();
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                resultado = false;
-            }
-            return resultado;
-        }
-
-        public static bool AltaProductoVendido(ProductoVendido venta)
-        {
-            bool resultado = false;
-
-            try
-            {
-
-                using (SqlConnection conn = new SqlConnection(CadenaConn))
-                {
-                    string queryCommand = "INSERT INTO ProductoVendido(Stock, IdProducto, IdVenta) VALUES(@stock, @idProducto, @idVenta);";
-                    SqlParameter parametroStock = new SqlParameter("stock", System.Data.SqlDbType.Int);
-                    parametroStock.Value = venta.Stock;
-                    SqlParameter parametroIdProducto = new SqlParameter("idProducto", System.Data.SqlDbType.Int);
-                    parametroIdProducto.Value = venta.IdProducto;
-                    SqlParameter parametroIdVenta = new SqlParameter("idVenta", System.Data.SqlDbType.Int);
-                    parametroIdVenta.Value = venta.IdVenta;
-                    
-
-                    conn.Open();
-                    using (SqlCommand sqlcomm = new SqlCommand(queryCommand, conn))
-                    {
-                        sqlcomm.Parameters.Add(parametroStock);
-                        sqlcomm.Parameters.Add(parametroIdProducto);
-                        sqlcomm.Parameters.Add(parametroIdVenta);
-                       
-                        int filas = sqlcomm.ExecuteNonQuery();
-                        if (filas > 0)
-                        {
-                            return true;
-                        }
-
-
-
-                    }
-
-                    conn.Close();
-
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return false;
-
-            }
-            return resultado;
-        }
-
-        public static bool ModificacionProductoVendido(ProductoVendido venta)
-        {
-            bool resultado = false;
-
-            try
-            {
-
-                using (SqlConnection conn = new SqlConnection(CadenaConn))
-                {
-                    string queryCommand = "UPDATE ProductoVendido SET Stock = @stock, IdProducto = @idProducto, IdVenta = @idVenta WHERE Id = @id;";
-
-                    SqlParameter parametroId = new SqlParameter("id", System.Data.SqlDbType.Int);
-                    parametroId.Value = venta.Id;
-                    SqlParameter parametroStock = new SqlParameter("stock", System.Data.SqlDbType.Int);
-                    parametroStock.Value = venta.Stock;
-                    SqlParameter parametroIdProducto = new SqlParameter("idProducto", System.Data.SqlDbType.Int);
-                    parametroIdProducto.Value = venta.IdProducto;
-                    SqlParameter parametroIdVenta = new SqlParameter("idVenta", System.Data.SqlDbType.Int);
-                    parametroIdVenta.Value = venta.IdVenta;
-
-
-                    conn.Open();
-                    using (SqlCommand sqlcomm = new SqlCommand(queryCommand, conn))
-                    {
-                        sqlcomm.Parameters.Add(parametroId);
-                        sqlcomm.Parameters.Add(parametroStock);
-                        sqlcomm.Parameters.Add(parametroIdProducto);
-                        sqlcomm.Parameters.Add(parametroIdVenta);
-
-                        int filas = sqlcomm.ExecuteNonQuery();
-                        if (filas > 0)
-                        {
-                            resultado = true;
-                        }
-
-                    }
-
-                    conn.Close();
-
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return false;
-
-            }
-            return resultado;
-        }
-
+        
     }
 
 }

@@ -9,47 +9,11 @@ namespace MiPrimeraApi.Controllers
     [Route("[controller]")]
     public class ProductoVendidoController : ControllerBase
     {
-        [HttpGet(Name ="GetProductosVendidos")]
-        public List<ProductoVendido> GetProductosVendidos()
+        [HttpGet("nombreUsuario")]
+        //end point para listar productos vendidos por un usuario
+        public List<ProductoVendido> TraerProductosVendidos(string nombreUsuario)
         {
-            return ProductoVendidoHandler.GetProductosVendidos();
-        }
-
-        [HttpDelete]
-        public bool BajaProductoVendido([FromBody] int Id)
-        {
-            return ProductoVendidoHandler.BajaProductoVendido(Id);
-        }
-
-        [HttpPost]
-        public bool AltaProductoVendido([FromBody] PostProductoVendido venta)
-        {
-            return ProductoVendidoHandler.AltaProductoVendido(new ProductoVendido
-            {
-                Stock = venta.Stock,
-                IdProducto = venta.IdProducto,
-                IdVenta = venta.IdVenta
-
-
-            });
-
-
-        }
-
-        [HttpPut]
-
-        public bool ModificacionProductoVendido([FromBody] PutProductoVendido venta)
-        {
-            return ProductoVendidoHandler.ModificacionProductoVendido(new ProductoVendido
-            {
-                Id=venta.Id,
-                Stock=venta.Stock,
-                IdProducto=venta.IdProducto,
-                IdVenta=venta.IdVenta
-
-            });
-
-
+            return ProductoVendidoHandler.GetProductosVendidos(nombreUsuario);
         }
 
     }

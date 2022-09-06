@@ -7,40 +7,52 @@ namespace MiPrimeraApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+
+    
     public class UsuarioController : ControllerBase
     {
-       
 
-        [HttpGet (Name ="GetUsuarios")]
-        public List<Usuario> GetUsuarios()
+        [HttpGet ("nombreUsuario")]
+
+        //end point para traer los datos completos del Usuario buscandolo por el campo nombreUsuario
+        public Usuario TraerUsuario(string nombreUsuario)
         {
-            return UsuarioHandler.GetUsuarios();
+            return UsuarioHandler.GetUsuarios(nombreUsuario);
             
         }
 
         [HttpGet("nombreUsuario/contraseña")]
-        public bool ExisteUsuario (string nombreUsuario, string contraseña)
+
+        //end point para utilizar como Login. 
+        public string IncioDeSesion (string nombreUsuario, string contraseña)
         {
+            //Obtengo un objeto Usuario y compruebo si esta vacio o no
             Usuario usuario = UsuarioHandler.VerificaUsuario(nombreUsuario, contraseña);
             if (usuario.NombreUsuario==null)
             {
-                return false;
+                return "Usuario y contraseña incorrectos";
+               
             }
             {
-                return true;
+                return "Ingreso exitoso";
             }
 
         }
 
         [HttpDelete]
-        public bool BajasUsuario([FromBody] int Id)
+
+        //end point para dar de baja Usuario de la base de datos
+        public bool EliminarUsuario([FromBody] int Id)
         {
             return UsuarioHandler.BajaUsuario(Id);
         }
 
         [HttpPut]
+        
+        //end point para las modificaciones de datos de Usuario de la base de datos
         public bool ModificarUsuario([FromBody]PutUsuario usuario)
-        {
+        {   
+
             return UsuarioHandler.ModificarUsuario(new Usuario
             {
                 Id = usuario.Id,
@@ -56,8 +68,11 @@ namespace MiPrimeraApi.Controllers
 
         [HttpPost]
 
-        public bool AltasUsuario([FromBody]PostUsuario usuario)
+        //end point para dar de alta Usuarios a la base de datos
+        public bool CrearUsuario([FromBody]PostUsuario usuario)
         {
+           
+           
             return UsuarioHandler.AltaUsuario(new Usuario
             {
                 Nombre = usuario.Nombre,
@@ -70,10 +85,6 @@ namespace MiPrimeraApi.Controllers
 
                
         }
-
-        
-        
-       
 
     }
 }

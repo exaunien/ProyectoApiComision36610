@@ -9,20 +9,23 @@ namespace MiPrimeraApi.Controllers
     [Route("[controller]")]
     public class ProductoController : ControllerBase
     {
-        [HttpGet (Name ="GetProductos")]
-        public List<Producto> GetProductos()
+        [HttpGet (Name ="TraerProductos")]
+        //end point para traer los productos
+        public List<Producto> TraerProductos()
         {
             return ProductoHandler.GetProductos();
         }
 
         [HttpDelete]
-        public bool BajaProducto([FromBody] int Id)
+        // end point para borrar productos de la base de datos
+        public bool EliminarProducto([FromBody] int Id)
         {
             return ProductoHandler.BajaProducto(Id);
         }
 
         [HttpPost]
-        public bool AltaProducto([FromBody] PostProductos producto )
+        //end point para crear producto
+        public bool CrearProducto([FromBody] PostProductos producto )
         {
             return ProductoHandler.AltaProducto(new Producto
             {
@@ -39,7 +42,7 @@ namespace MiPrimeraApi.Controllers
         }
 
         [HttpPut]
-
+        //end point para modificar los datos existentes de un producto
         public bool ModificarProducto([FromBody] PutProducto producto)
         {
             return ProductoHandler.ModificarProducto(new Producto

@@ -5,11 +5,17 @@ namespace MiPrimeraApi.Repository
 {
     public static class ProductoHandler
     {
+        //cadena de conexion a la base de datos
         public const string CadenaConn = "Server=DESKTOP-86FO44B;Initial Catalog=SistemaGestion;" +
             "Trusted_Connection=true";
+
+        //metodo para traer todos los productos
         public static List<Producto> GetProductos()
         {
-            const string querycommand = "SELECT pd.Id, pd.Descripciones, pd.Costo, pd.PrecioVenta, pd.Stock, Us.NombreUsuario FROM Producto AS pd INNER JOIN Usuario AS us ON pd.IdUsuario = us.Id;";
+            string querycommand = "SELECT pd.Id, pd.Descripciones, pd.Costo, pd.PrecioVenta, pd.Stock, " +
+                "  us.NombreUsuario " +
+                " FROM Producto as pd INNER JOIN Usuario AS us ON pd.IdUsuario = us.Id; ";
+
 
             List<Producto> resultado = new List<Producto>();
 
@@ -34,7 +40,7 @@ namespace MiPrimeraApi.Repository
                                     producto.Costo = Convert.ToInt32(lector["Costo"]);
                                     producto.PrecioVenta = Convert.ToInt32(lector["PrecioVenta"]);
                                     producto.Stock = Convert.ToInt32(lector["Stock"]);
-                                    producto.NombreUsuario = lector["NombreUsuario"].ToString();
+                                    producto.NombreUsuario = (lector["NombreUsuario"].ToString());
                                     resultado.Add(producto);
                                 }
                             }
@@ -53,25 +59,31 @@ namespace MiPrimeraApi.Repository
 
         }
 
+        //metodo para dar de baja un producto
         public static bool BajaProducto(int id)
         {
             bool resultado = false;
 
-            try
+            try //comandos a la base de datos
             {
                 using (SqlConnection conn = new SqlConnection(CadenaConn))
                 {
+                    //Consulta a la base de datos
                     string queryCommand = "DELETE FROM Producto WHERE Id = @idProducto;";
+
                     conn.Open();
+
+                    //se crean los parametros necesarios como para ejecutar la consulta a la base de datos
                     SqlParameter parametro = new SqlParameter("idProducto", System.Data.SqlDbType.BigInt);
                     parametro.Value = id;
+
                     using (SqlCommand sqlcomm = new SqlCommand(queryCommand, conn))
                     {
                         sqlcomm.Parameters.Add(parametro);
-                        int filas = sqlcomm.ExecuteNonQuery();
+                        int filas = sqlcomm.ExecuteNonQuery();//Se realiza la baja del producto
                         if (filas > 0)
                         {
-                            resultado = true;
+                            resultado = true; //se dio de baja con exito
                         }
 
                     }
@@ -87,16 +99,20 @@ namespace MiPrimeraApi.Repository
             return resultado;
         }
 
+        //Metodo para las altas de productos
         public static bool AltaProducto(Producto producto)
         {
             bool resultado = false;
 
-            try
+            try // Comandos para la base de datos
             {
 
                 using (SqlConnection conn = new SqlConnection(CadenaConn))
                 {
+                    //Consulta a la base de datos
                     string queryCommand = "INSERT INTO Producto(Descripciones, Costo, PrecioVenta, Stock, IdUsuario) VALUES(@descripciones, @costo, @precioVenta, @stock, @idUsuario);";
+
+                    //se crean los parametros necesarios como para ejecutar la consulta a la base de datos
                     SqlParameter parametroDescripciones = new SqlParameter("descripciones", System.Data.SqlDbType.VarChar);
                     parametroDescripciones.Value = producto.Descripciones;
                     SqlParameter parametroCosto = new SqlParameter("costo", System.Data.SqlDbType.VarChar);
@@ -117,21 +133,16 @@ namespace MiPrimeraApi.Repository
                         sqlcomm.Parameters.Add(parametroStock);
                         sqlcomm.Parameters.Add(parametroIdUsuario);
 
-                        int filas = sqlcomm.ExecuteNonQuery();
+                        int filas = sqlcomm.ExecuteNonQuery();//se crea el alta del producto a la base de datos
                         if (filas > 0)
                         {
-                            return true;
+                            return true;//Producto creado
                         }
-
-
 
                     }
 
                     conn.Close();
-
-
                 }
-
             }
             catch (Exception ex)
             {
@@ -142,17 +153,20 @@ namespace MiPrimeraApi.Repository
             return resultado;
         }
 
+        //metodo para la modificacion de los productos en la base de datos
         public static bool ModificarProducto(Producto producto)
         {
             bool resultado = false;
 
-            try
+            try //Comandos a la base de datos
             {
 
                 using (SqlConnection conn = new SqlConnection(CadenaConn))
                 {
-                    string queryCommand = "UPDATE Producto SET @descripciones, @costo, @precioVenta, @stock, @idUsuario WHERE Id=@id;";
+                    //Consulta a la base de datos
+                    string queryCommand = "UPDATE Producto SET Descripciones=@descripciones, Costo=@costo, PrecioVenta=@precioVenta, Stock=@stock, IdUsuario=@idUsuario WHERE Id=@id;";
 
+                    //se crean los parametros necesarios como para ejecutar la consulta a la base de datos
                     SqlParameter parametroId = new SqlParameter("id", System.Data.SqlDbType.BigInt);
                     parametroId.Value = producto.Id;
                     SqlParameter parametroDescripciones = new SqlParameter("descripciones", System.Data.SqlDbType.VarChar);
@@ -167,7 +181,7 @@ namespace MiPrimeraApi.Repository
                     parametroIdUsuario.Value = producto.IdUsuario;
 
                     conn.Open();
-                    using (SqlCommand sqlcomm = new SqlCommand(queryCommand, conn))
+                    using (SqlCommand sqlcomm = new SqlCommand(queryCommand,conn))
                     {
                         sqlcomm.Parameters.Add(parametroId);
                         sqlcomm.Parameters.Add(parametroDescripciones);
@@ -176,18 +190,15 @@ namespace MiPrimeraApi.Repository
                         sqlcomm.Parameters.Add(parametroStock);
                         sqlcomm.Parameters.Add(parametroIdUsuario);
 
-                        int filas = sqlcomm.ExecuteNonQuery();
+                        int filas = sqlcomm.ExecuteNonQuery();//se realiza la modificacion del producto
                         if (filas > 0)
                         {
-                            resultado=true;
+                            resultado = true;//modoficacion realizada
                         }
-
-
 
                     }
 
                     conn.Close();
-
 
                 }
 
@@ -196,11 +207,9 @@ namespace MiPrimeraApi.Repository
             {
                 Console.WriteLine(ex.Message);
                 return false;
-
             }
             return resultado;
         }
-
 
     }
 }

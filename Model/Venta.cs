@@ -1,8 +1,8 @@
 ﻿namespace MiPrimeraApi.Model
 {
-    public class Venta 
+    public class Venta : ProductoVendido
     {
-        public int Id { get; set; }
+        public new int Id { get; set; }
         public string Comentarios  { get; set; }
 
     }
